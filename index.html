@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regno 1887 - Appointments</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Inter,sans-serif;background:#0f1419;color:#e2e8f0}
+.title{font-family:Space Grotesk,sans-serif}
+.glass{background:rgba(24,33,45,.85);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06)}
+.card-hover:hover{border-color:rgba(99,102,241,.3);transform:translateY(-1px)}
+</style>
+</head>
+<body class="min-h-screen">
+<header class="sticky top-0 z-30 bg-[#0f1419]/80 backdrop-blur-xl border-b border-white/5">
+<div class="max-w-6xl mx-auto px-4 h-[56px] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center font-bold text-sm">R</div>
+<div><div class="title font-bold text-[14px] leading-none">REGNO 1887</div><div class="text-[10px] tracking-[0.15em] text-slate-400">APPOINTMENTS</div></div>
+</div>
+<div class="flex items-center gap-2">
+<select id="lang" class="bg-[#1c2532] border border-white/10 rounded-full px-3 py-1.5 text-xs">
+<option value="en">EN</option><option value="it">IT</option><option value="fr">FR</option><option value="es">ES</option><option value="de">DE</option>
+</select>
+</div>
+</div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+<div id="homeView" class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
+<!-- LEFT FORM -->
+<div class="glass rounded-[24px] p-6 h-fit">
+<h2 class="title font-bold text-[16px] mb-1">New Appointment</h2>
+<p class="text-xs text-slate-400 mb-5">Create a rally or meeting for your kingdom</p>
+<form id="createForm" class="space-y-4">
+<div><label class="text-[11px] uppercase tracking-widest text-slate-400">Title *</label><input id="fTitle" required placeholder="KvK Rally - Throne 21:00" class="mt-1.5 w-full px-4 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm"></div>
+<div class="grid grid-cols-2 gap-3">
+<div><label class="text-[11px] uppercase tracking-widest text-slate-400">Date *</label><input id="fDate" type="date" required class="mt-1.5 w-full px-3 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm"></div>
+<div><label class="text-[11px] uppercase tracking-widest text-slate-400">Time *</label><input id="fTime" type="time" required class="mt-1.5 w-full px-3 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm"></div>
+</div>
+<div><label class="text-[11px] uppercase tracking-widest text-slate-400">Type</label><select id="fType" class="mt-1.5 w-full px-4 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm"><option>Rally</option><option>Defense</option><option>Meeting</option><option>Guard Shift</option><option>Scout</option><option>Other</option></select></div>
+<div><label class="text-[11px] uppercase tracking-widest text-slate-400">Target / Location</label><input id="fTarget" placeholder="Throne, Fort, Server 1895..." class="mt-1.5 w-full px-4 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm"></div>
+<div><label class="text-[11px] uppercase tracking-widest text-slate-400">Leader</label><input id="fLeader" placeholder="Your in-game name" class="mt-1.5 w-full px-4 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm"></div>
+<div><label class="text-[11px] uppercase tracking-widest text-slate-400">Notes</label><textarea id="fNote" rows="3" placeholder="Power req, troops, strategy..." class="mt-1.5 w-full px-4 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm"></textarea></div>
+<button class="w-full bg-white text-black py-3.5 rounded-xl font-semibold text-sm hover:bg-slate-100">+ Create Appointment</button>
+</form>
+</div>
+
+<!-- RIGHT LIST -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<h2 class="title text-[18px] font-bold">Upcoming</h2>
+<div class="flex bg-[#1a2330] rounded-full p-1 border border-white/5">
+<button onclick="setF('all')" id="fbAll" class="px-4 py-1.5 rounded-full text-xs bg-white text-black font-medium">All</button>
+<button onclick="setF('today')" id="fbToday" class="px-4 py-1.5 rounded-full text-xs text-slate-400">Today</button>
+</div>
+</div>
+<div id="apptList" class="space-y-3"></div>
+<div id="emptyBox" class="glass rounded-[24px] p-14 text-center mt-4">
+<div class="w-14 h-14 rounded-2xl bg-[#1c2532] border border-white/5 mx-auto flex items-center justify-center mb-4 text-xl">⚔️</div>
+<h3 class="font-semibold">No appointments</h3>
+<p class="text-xs text-slate-400 mt-2 max-w-[220px] mx-auto">Your kingdom has no scheduled rallies. Create the first one. This board is empty - no alliances pre-loaded.</p>
+</div>
+</div>
+</div>
+
+<!-- DETAIL VIEW like /appointments/ID -->
+<div id="detailView" class="hidden max-w-[640px] mx-auto">
+<button onclick="showHome()" class="mb-4 text-xs text-slate-400 flex items-center gap-1">← Back to list</button>
+<div id="detailCard" class="glass rounded-[24px] p-6"></div>
+<div class="glass rounded-[24px] p-6 mt-4">
+<h3 class="font-bold text-sm mb-3">Join this appointment</h3>
+<form id="joinForm" class="flex gap-2">
+<input id="jName" required placeholder="Your in-game name" class="flex-1 px-4 py-3 rounded-xl bg-[#0f1419] border border-white/10 text-sm">
+<button class="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium">Join</button>
+</form>
+<div id="participants" class="mt-4 space-y-2"></div>
+</div>
+<div class="mt-4 glass rounded-xl p-3 flex gap-2">
+<input id="shareLink" readonly class="flex-1 bg-transparent text-xs text-slate-400">
+<button onclick="copyLink()" class="text-xs px-3 py-1.5 rounded-full bg-white text-black">Copy</button>
+</div>
+</div>
+</main>
+
+<script>
+let filter='all';
+let store=JSON.parse(localStorage.getItem('r1887_v2')||'[]');
+document.getElementById('fDate').valueAsDate=new Date();
+function save(){localStorage.setItem('r1887_v2',JSON.stringify(store));}
+function setF(f){filter=f;render();}
+function idGen(){return Math.random().toString(36).slice(2,8)+Date.now().toString(36);}
+
+document.getElementById('createForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const ap={id:idGen(),title:fTitle.value,date:fDate.value,time:fTime.value,type:fType.value,target:fTarget.value,leader:fLeader.value,note:fNote.value,participants:[],created:Date.now()};
+ store.push(ap);save();render();e.target.reset();fDate.valueAsDate=new Date();
+ const url=location.origin+location.pathname.replace('index.html','')+'#'+ap.id;
+ prompt('Appointment created! Share this link:',url);
+});
+
+function render(){
+ const list=document.getElementById('apptList');list.innerHTML='';
+ let data=[...store];const today=new Date().toISOString().slice(0,10);
+ if(filter==='today') data=data.filter(d=>d.date===today);
+ document.getElementById('emptyBox').style.display=data.length?'none':'block';
+ document.getElementById('fbAll').className=filter==='all'?'px-4 py-1.5 rounded-full text-xs bg-white text-black font-medium':'px-4 py-1.5 rounded-full text-xs text-slate-400';
+ document.getElementById('fbToday').className=filter==='today'?'px-4 py-1.5 rounded-full text-xs bg-white text-black font-medium':'px-4 py-1.5 rounded-full text-xs text-slate-400';
+ data.sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time)).reverse().forEach(ap=>{
+  const el=document.createElement('div');el.className='glass rounded-[20px] p-4 card-hover transition-all cursor-pointer';
+  el.innerHTML=`<div onclick="openDetail('${ap.id}')" class="flex gap-3"><div class="w-[52px] h-[52px] rounded-xl bg-[#151d29] border border-white/10 flex flex-col items-center justify-center"><span class="text-[10px] text-slate-400">${ap.date.slice(5).replace('-','/')}</span><span class="font-bold text-[15px]">${ap.time}</span></div><div class="flex-1"><h3 class="font-semibold text-[14px]">${ap.title}</h3><div class="flex items-center gap-2 mt-1"><span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">${ap.type}</span><span class="text-xs text-slate-400">${ap.target||''}</span></div><div class="text-[11px] text-slate-500 mt-1">${ap.leader? 'by '+ap.leader+' • ':''}${ap.participants.length} joined</div></div></div>`;
+  list.appendChild(el);
+ });
+ checkHash();
+}
+function openDetail(id){location.hash=id;showDetail(id);}
+function showDetail(id){
+ const ap=store.find(x=>x.id===id);if(!ap)return;
+ document.getElementById('homeView').classList.add('hidden');document.getElementById('detailView').classList.remove('hidden');
+ document.getElementById('detailCard').innerHTML=`<div class="flex gap-4"><div class="w-14 h-14 rounded-xl bg-[#151d29] border border-white/10 flex flex-col items-center justify-center"><span class="text-[10px] text-slate-400">${ap.date}</span><span class="font-bold">${ap.time}</span></div><div><h2 class="title text-[20px] font-bold">${ap.title}</h2><p class="text-sm text-slate-400 mt-1">${ap.type} ${ap.target? '• '+ap.target:''}</p><p class="text-xs text-slate-500 mt-2">${ap.note||''}</p><p class="text-xs text-slate-500 mt-2">Leader: ${ap.leader||'Unknown'}</p></div></div>`;
+ document.getElementById('shareLink').value=location.href;
+ renderParticipants(id);
+ document.getElementById('joinForm').onsubmit=(e)=>{e.preventDefault();const name=document.getElementById('jName').value.trim();if(!name)return;ap.participants.push({name,time:new Date().toLocaleTimeString()});save();document.getElementById('jName').value='';renderParticipants(id);render();};
+}
+function renderParticipants(id){const ap=store.find(x=>x.id===id);const c=document.getElementById('participants');c.innerHTML=ap.participants.length? ap.participants.map((p,i)=>`<div class="flex justify-between bg-[#0f1419] border border-white/5 rounded-xl px-3 py-2 text-sm"><span>${i+1}. ${p.name}</span><span class="text-xs text-slate-500">${p.time}</span></div>`).join('') : '<p class="text-xs text-slate-500">No one joined yet. Be the first!</p>';}
+function showHome(){history.pushState("",document.title,window.location.pathname);document.getElementById('detailView').classList.add('hidden');document.getElementById('homeView').classList.remove('grid');document.getElementById('homeView').classList.add('grid');document.getElementById('homeView').classList.remove('hidden');}
+function copyLink(){const i=document.getElementById('shareLink');i.select();document.execCommand('copy');alert('Link copied!');}
+function checkHash(){const h=location.hash.replace('#','');if(h&&store.find(x=>x.id===h)){showDetail(h);}}
+window.addEventListener('hashchange',checkHash);
+render();
+</script>
+</body>
+</html>
