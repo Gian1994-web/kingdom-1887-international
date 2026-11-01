@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[WAR] Kingdom 1887 - LIVE Worldwide</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+body{background:#0b1117;color:#e2e8f0;font-family:sans-serif}
+.glass{background:#16202e;border:1px solid #ffffff12}
+.cell{min-width:95px;height:72px;border:1px solid rgba(255,255,255,.08);background:#101a27;text-align:center;cursor:pointer}
+.cell-h{min-width:95px;height:40px;border:1px solid rgba(255,255,255,.1);background:#0b1117;font-size:10px;color:#94a3b8;font-weight:700;text-align:center;position:sticky;top:0;z-index:5}
+.row-h{min-width:220px;background:#0b1117;border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:700;padding:0 12px;position:sticky;left:0;z-index:10}
+.booked{background:linear-gradient(135deg,#16a34a,#15803d)!important;color:white}
+.pending{background:linear-gradient(135deg,#f59e0b,#d97706)!important;color:white}
+.selected{outline:3px solid #facc15;outline-offset:-3px;background:#facc15!important;color:black!important}
+</style>
+</head>
+<body>
+<header class="p-4 border-b border-white/10 flex justify-between items-center max-w-[1700px] mx-auto sticky top-0 bg-[#0b1117] z-30">
+<div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">👑</div><div><div class="font-bold">[WAR] Kingdom: 1887 - LIVE</div><div class="text-xs flex items-center gap-2"><span id="connDot" class="w-2 h-2 rounded-full bg-amber-500"></span><span id="connText">Connecting...</span> | <span id="roleText">Player</span></div></div></div>
+<div class="flex gap-2 items-center">
+<select id="langSel" onchange="setLang(this.value)" class="text-xs px-3 py-2 rounded-full bg-[#16202e] border border-white/30 text-white font-bold">
+<option value="en">🇬🇧 English</option>
+<option value="it">🇮🇹 Italiano</option>
+<option value="fr">🇫🇷 Français</option>
+<option value="es">🇪🇸 Español</option>
+<option value="de">🇩🇪 Deutsch</option>
+<option value="ru">🇷🇺 Русский</option>
+<option value="tr">🇹🇷 Türkçe</option>
+<option value="ar">🇸🇦 العربية</option>
+<option value="pt">🇧🇷 Português</option>
+<option value="ja">🇯🇵 日本語</option>
+<option value="ko">🇰🇷 한국어</option>
+<option value="zh">🇨🇳 中文</option>
+</select>
+<button id="adminBtn" onclick="loginAdmin()" class="text-xs px-4 py-2 rounded-full bg-white text-black font-bold">🔐 Admin</button><button id="logoutBtn" onclick="logoutAdmin()" class="hidden text-xs px-3 py-1.5 rounded-full border border-white/10">Exit</button></div>
+</header>
+<div class="max-w-[1700px] mx-auto p-4 grid xl:grid-cols-[380px_1fr] gap-6">
+<div class="glass rounded-[20px] p-5 h-fit xl:sticky top-[80px] z-20">
+<h2 id="t-req" class="font-bold uppercase text-sm">Request Appointment</h2>
+<div id="selInfo" class="mt-3 p-3 rounded-xl bg-amber-400 text-black text-xs font-bold hidden"><span id="t-slot">Slot</span>: <span id="selText"></span></div>
+<div class="mt-4 space-y-3">
+<div><label id="t-alli" class="text-[10px] uppercase text-slate-400">Alliance</label><input id="fAll" value="WAR" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div class="grid grid-cols-2 gap-2"><div><label id="t-id" class="text-[10px] uppercase text-slate-400">Game ID</label><input id="fId" placeholder="123456" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div><div><label id="t-name" class="text-[10px] uppercase text-slate-400">In-game Name</label><input id="fName" placeholder="Voldemort" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div></div>
+<div><label id="t-oro" class="text-[10px] uppercase font-bold text-amber-300">Real Gold Owned</label><input id="fOro" type="text" placeholder="Ex: 1.5M, 300k" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-amber-400/40 text-sm"></div>
+<div class="grid grid-cols-2 gap-2"><div><label id="t-day" class="text-[10px] uppercase text-slate-400">Day</label><select id="fGiorno" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></select></div><div><label id="t-time" class="text-[10px] uppercase text-slate-400">UTC Time</label><select id="fTime" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></select></div></div>
+<button id="t-btn" onclick="inviaRichiesta()" class="w-full mt-2 bg-gradient-to-r from-indigo-600 to-violet-600 py-3.5 rounded-xl font-bold text-sm">📨 SEND REQUEST</button>
+<p id="msg" class="text-xs text-center mt-2 font-bold"></p>
+<p id="t-info" class="text-[10px] text-slate-400 text-center mt-3">ℹ️ Request will be sent to Voldemort. You will see your name only after approval.</p>
+</div>
+<div id="adminPanel" class="hidden mt-6 border-t border-white/10 pt-4">
+<h3 class="font-bold text-sm">🔥 <span id="t-pending">Pending Requests</span> (<span id="pendingCount">0</span>)</h3>
+<div id="pendingList" class="mt-3 space-y-2 max-h-[400px] overflow-auto"></div>
+<h3 class="font-bold text-sm mt-4">✅ <span id="t-approved">Approved</span> (<span id="approvedCount">0</span>)</h3>
+<div id="approvedList" class="mt-2 space-y-1 max-h-[200px] overflow-auto"></div>
+</div>
+</div>
+<div class="overflow-hidden">
+<h2 class="font-bold mb-2 flex gap-2 items-center">🕐 <span id="t-table">Official LIVE Table</span> <span id="t-only" class="text-[10px] px-2 py-1 rounded bg-green-500/20 text-green-400">Only approved visible</span></h2>
+<div class="glass rounded-[16px] overflow-auto max-h-[85vh]">
+<table class="border-collapse"><thead><tr id="headRow"></tr></thead><tbody id="tbody"></tbody></table>
+</div>
+</div>
+</div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCSknMrcfKPLHxS8e5VRpd9J0YkAKed1jg",
+  authDomain: "regno-1887.firebaseapp.com",
+  databaseURL: "https://regno-1887-default-rtdb.firebaseio.com",
+  projectId: "regno-1887",
+  storageBucket: "regno-1887.firebasestorage.app",
+  messagingSenderId: "208678152589",
+  appId: "1:208678152589:web:4979f2d05333c147b7f5c4",
+  measurementId: "G-JPCSBT3BR3"
+};
+const ADMIN_PASSWORD="WAR1887";
+
+// KEYS FIXED - never change, used for DB
+const ROWS_KEYS=["d1_const","d2_res","d4_noble","d4_pm","d5_noble","d5_pm"];
+const ROWS_LABELS={
+en:["Day 1 (Construction)","Day 2 (Research)","Day 4 (Noble Counselor)","Day 4 (Prime Minister)","Day 5 (Noble Counselor)","Day 5 (Prime Minister)"],
+it:["Giorno 1 (Costruzione)","Giorno 2 (Ricerca)","Giorno 4 (Consigliere Nobile)","Giorno 4 (Primo Ministro)","Giorno 5 (Consigliere Nobile)","Giorno 5 (Primo Ministro)"],
+fr:["Jour 1 (Construction)","Jour 2 (Recherche)","Jour 4 (Conseiller Noble)","Jour 4 (Premier Ministre)","Jour 5 (Conseiller Noble)","Jour 5 (Premier Ministre)"],
+es:["Día 1 (Construcción)","Día 2 (Investigación)","Día 4 (Consejero Noble)","Día 4 (Primer Ministro)","Día 5 (Consejero Noble)","Día 5 (Primer Ministro)"],
+de:["Tag 1 (Bau)","Tag 2 (Forschung)","Tag 4 (Adliger Berater)","Tag 4 (Premierminister)","Tag 5 (Adliger Berater)","Tag 5 (Premierminister)"],
+ru:["День 1 (Строительство)","День 2 (Исследование)","День 4 (Благородный Советник)","День 4 (Премьер-министр)","День 5 (Благородный Советник)","День 5 (Премьер-министр)"],
+tr:["Gün 1 (İnşaat)","Gün 2 (Araştırma)","Gün 4 (Soylu Danışman)","Gün 4 (Başbakan)","Gün 5 (Soylu Danışman)","Gün 5 (Başbakan)"],
+ar:["اليوم 1 (البناء)","اليوم 2 (البحث)","اليوم 4 (المستشار النبيل)","اليوم 4 (رئيس الوزراء)","اليوم 5 (المستشار النبيل)","اليوم 5 (رئيس الوزراء)"],
+pt:["Dia 1 (Construção)","Dia 2 (Pesquisa)","Dia 4 (Conselheiro Nobre)","Dia 4 (Primeiro Ministro)","Dia 5 (Conselheiro Nobre)","Dia 5 (Primeiro Ministro)"],
+ja:["1日目（建設）","2日目（研究）","4日目（高貴な顧問）","4日目（首相）","5日目（高貴な顧問）","5日目（首相）"],
+ko:["1일차 (건설)","2일차 (연구)","4일차 (고귀한 조언자)","4일차 (총리)","5일차 (고귀한 조언자)","5일차 (총리)"],
+zh:["第1天（建设）","第2天（研究）","第4天（贵族顾问）","第4天（总理）","第5天（贵族顾问）","第5天（总理）"]
+};
+
+const L={
+en:{req:"Request Appointment",slot:"Slot",alli:"Alliance",id:"Game ID",name:"In-game Name",oro:"Real Gold Owned",day:"Day",time:"UTC Time",btn:"📨 SEND REQUEST",info:"ℹ️ Request will be sent to Voldemort. You will see your name only after approval.",pending:"Pending Requests",approved:"Approved",table:"Official LIVE Table",only:"Only approved visible",player:"Player",admin:"ADMIN",conn:"Connected - LIVE Worldwide",free:"Free",waiting:"Waiting",reserved:"Reserved",fill:"❌ Fill ID, Name and Gold",occupied:"❌ Slot already taken",sent:"📨 Request sent! Waiting approval",approvedMsg:"✅ Approved LIVE",dayPos:"Day / Position"},
+it:{req:"Richiedi Appuntamento",slot:"Slot",alli:"Alleanza",id:"ID Gioco",name:"Nome in gioco",oro:"Oro Vero Posseduto",day:"Giorno",time:"Orario UTC",btn:"📨 INVIA RICHIESTA",info:"ℹ️ La richiesta verrà inviata a Voldemort. Vedrai il tuo nome solo dopo approvazione.",pending:"Richieste in Attesa",approved:"Approvate",table:"Tabella Ufficiale LIVE",only:"Solo approvate visibili",player:"Giocatore",admin:"ADMIN",conn:"Connesso - LIVE Mondiale",free:"Libero",waiting:"In attesa",reserved:"Riservato",fill:"❌ Compila ID, Nome e Oro",occupied:"❌ Slot già occupato",sent:"📨 Richiesta inviata! In attesa",approvedMsg:"✅ Approvato LIVE",dayPos:"Giorno / Posizione"},
+fr:{req:"Demander Rendez-vous",slot:"Créneau",alli:"Alliance",id:"ID Jeu",name:"Nom en jeu",oro:"Or Réel",day:"Jour",time:"Heure UTC",btn:"📨 ENVOYER",info:"ℹ️ Demande envoyée à Voldemort. Nom visible après approbation.",pending:"En Attente",approved:"Approuvées",table:"Tableau Officiel LIVE",only:"Seulement approuvées",player:"Joueur",admin:"ADMIN",conn:"Connecté - LIVE",free:"Libre",waiting:"En attente",reserved:"Réservé",fill:"❌ Remplis ID, Nom et Or",occupied:"❌ Déjà pris",sent:"📨 Envoyée! En attente",approvedMsg:"✅ Approuvé",dayPos:"Jour / Position"},
+es:{req:"Solicitar Cita",slot:"Horario",alli:"Alianza",id:"ID Juego",name:"Nombre",oro:"Oro Real",day:"Día",time:"Hora UTC",btn:"📨 ENVIAR",info:"ℹ️ Solicitud a Voldemort. Verás tu nombre tras aprobación.",pending:"Pendientes",approved:"Aprobadas",table:"Tabla Oficial LIVE",only:"Solo aprobadas",player:"Jugador",admin:"ADMIN",conn:"Conectado - LIVE",free:"Libre",waiting:"Esperando",reserved:"Reservado",fill:"❌ Completa ID, Nombre y Oro",occupied:"❌ Ocupado",sent:"📨 ¡Enviada! Esperando",approvedMsg:"✅ Aprobado",dayPos:"Día / Posición"},
+de:{req:"Termin Anfordern",slot:"Slot",alli:"Allianz",id:"Spiel-ID",name:"Spielname",oro:"Echtes Gold",day:"Tag",time:"UTC Zeit",btn:"📨 SENDEN",info:"ℹ️ Anfrage an Voldemort. Name erst nach Freigabe sichtbar.",pending:"Ausstehend",approved:"Genehmigt",table:"Offizielle LIVE Tabelle",only:"Nur genehmigte",player:"Spieler",admin:"ADMIN",conn:"Verbunden - LIVE",free:"Frei",waiting:"Wartend",reserved:"Reserviert",fill:"❌ ID, Name und Gold ausfüllen",occupied:"❌ Belegt",sent:"📨 Gesendet! Wartet",approvedMsg:"✅ Genehmigt",dayPos:"Tag / Position"},
+ru:{req:"Запросить встречу",slot:"Слот",alli:"Альянс",id:"ID",name:"Имя",oro:"Золото",day:"День",time:"UTC",btn:"📨 ОТПРАВИТЬ",info:"ℹ️ Запрос Voldemort. Имя после одобрения.",pending:"Ожидают",approved:"Одобрены",table:"LIVE Таблица",only:"Только одобренные",player:"Игрок",admin:"АДМИН",conn:"Подключено - LIVE",free:"Свободно",waiting:"Ожидание",reserved:"Занято",fill:"❌ Заполните ID, Имя и Золото",occupied:"❌ Занято",sent:"📨 Отправлено! Ожидает",approvedMsg:"✅ Одобрено",dayPos:"День / Позиция"},
+tr:{req:"Randevu İste",slot:"Slot",alli:"İttifak",id:"ID",name:"İsim",oro:"Altın",day:"Gün",time:"UTC",btn:"📨 GÖNDER",info:"ℹ️ İstek Voldemort'a. İsim onaydan sonra görünür.",pending:"Bekleyenler",approved:"Onaylı",table:"CANLI Tablo",only:"Sadece onaylı",player:"Oyuncu",admin:"ADMIN",conn:"Bağlı - CANLI",free:"Boş",waiting:"Bekliyor",reserved:"Rezerve",fill:"❌ ID, İsim ve Altın doldur",occupied:"❌ Dolu",sent:"📨 Gönderildi! Bekliyor",approvedMsg:"✅ Onaylandı",dayPos:"Gün / Pozisyon"},
+ar:{req:"طلب موعد",slot:"فتحة",alli:"التحالف",id:"ID",name:"الاسم",oro:"الذهب",day:"اليوم",time:"UTC",btn:"📨 إرسال",info:"ℹ️ الطلب إلى Voldemort. الاسم بعد الموافقة.",pending:"معلقة",approved:"موافق",table:"جدول مباشر",only:"الموافق فقط",player:"لاعب",admin:"ADMIN",conn:"متصل - مباشر",free:"حر",waiting:"انتظار",reserved:"محجوز",fill:"❌ املأ ID والاسم والذهب",occupied:"❌ محجوز",sent:"📨 أرسل! بانتظار",approvedMsg:"✅ موافق",dayPos:"اليوم / المنصب"},
+pt:{req:"Solicitar",slot:"Slot",alli:"Aliança",id:"ID",name:"Nome",oro:"Ouro",day:"Dia",time:"UTC",btn:"📨 ENVIAR",info:"ℹ️ Solicitação para Voldemort. Nome após aprovação.",pending:"Pendentes",approved:"Aprovadas",table:"Tabela AO VIVO",only:"Só aprovadas",player:"Jogador",admin:"ADMIN",conn:"Conectado - AO VIVO",free:"Livre",waiting:"Aguardando",reserved:"Reservado",fill:"❌ Preencha ID, Nome e Ouro",occupied:"❌ Ocupado",sent:"📨 Enviada! Aguardando",approvedMsg:"✅ Aprovado",dayPos:"Dia / Posição"},
+ja:{req:"予約リクエスト",slot:"スロット",alli:"同盟",id:"ID",name:"名前",oro:"ゴールド",day:"日",time:"UTC",btn:"📨 送信",info:"ℹ️ Voldemortへ送信。承認後に表示。",pending:"保留中",approved:"承認済み",table:"公式LIVE表",only:"承認済みのみ",player:"プレイヤー",admin:"管理者",conn:"接続済み - LIVE",free:"空き",waiting:"待機",reserved:"予約済",fill:"❌ ID、名前、ゴールド入力",occupied:"❌ 取得済み",sent:"📨 送信！承認待ち",approvedMsg:"✅ 承認済み",dayPos:"日 / 役職"},
+ko:{req:"예약 요청",slot:"슬롯",alli:"동맹",id:"ID",name:"이름",oro:"골드",day:"일",time:"UTC",btn:"📨 보내기",info:"ℹ️ Voldemort에게 전송. 승인 후 표시.",pending:"대기 중",approved:"승인됨",table:"공식 LIVE 표",only:"승인된 것만",player:"플레이어",admin:"관리자",conn:"연결됨 - LIVE",free:"비어 있음",waiting:"대기",reserved:"예약됨",fill:"❌ ID, 이름, 골드 입력",occupied:"❌ 차지됨",sent:"📨 전송! 대기 중",approvedMsg:"✅ 승인됨",dayPos:"일 / 직책"},
+zh:{req:"请求预约",slot:"时段",alli:"联盟",id:"ID",name:"名称",oro:"黄金",day:"天",time:"UTC",btn:"📨 发送",info:"ℹ️ 请求给Voldemort。批准后显示。",pending:"待处理",approved:"已批准",table:"官方LIVE表",only:"仅已批准",player:"玩家",admin:"管理员",conn:"已连接 - LIVE",free:"空闲",waiting:"等待",reserved:"已保留",fill:"❌ 填写ID、姓名和黄金",occupied:"❌ 已占用",sent:"📨 已发送！等待中",approvedMsg:"✅ 已批准",dayPos:"日期 / 职位"}
+};
+
+let curLang=localStorage.getItem('regnoLang')||'en';
+let bookings=[];
+let selected={giorno:null,time:null};
+let isAdmin=localStorage.getItem('isAdmin')==='1';
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const ref=db.ref('regno1887_bookings');
+
+ref.on('value', snap=>{
+  const val=snap.val();
+  bookings=val?Object.values(val):[];
+  document.getElementById('connDot').className='w-2 h-2 rounded-full bg-green-500 animate-pulse';
+  applyLang();
+});
+
+function setLang(l){curLang=l;localStorage.setItem('regnoLang',l);applyLang();}
+function applyLang(){
+ const t=L[curLang]||L.en;
+ document.getElementById('langSel').value=curLang;
+ document.documentElement.lang=curLang;
+ document.getElementById('t-req').textContent=t.req;
+ document.getElementById('t-slot').textContent=t.slot;
+ document.getElementById('t-alli').textContent=t.alli;
+ document.getElementById('t-id').textContent=t.id;
+ document.getElementById('t-name').textContent=t.name;
+ document.getElementById('t-oro').textContent=t.oro;
+ document.getElementById('t-day').textContent=t.day;
+ document.getElementById('t-time').textContent=t.time;
+ document.getElementById('t-btn').textContent=t.btn;
+ document.getElementById('t-info').textContent=t.info;
+ document.getElementById('t-pending').textContent=t.pending;
+ document.getElementById('t-approved').textContent=t.approved;
+ document.getElementById('t-table').textContent=t.table;
+ document.getElementById('t-only').textContent=t.only;
+ document.getElementById('roleText').textContent=isAdmin?t.admin:t.player;
+ document.getElementById('connText').textContent=t.conn;
+ // rebuild day select with translated labels but keep keys
+ const fG=document.getElementById('fGiorno');
+ fG.innerHTML='';
+ ROWS_KEYS.forEach((key,i)=>{
+   let o=document.createElement('option');
+   o.value=key;
+   o.textContent=(ROWS_LABELS[curLang]||ROWS_LABELS.en)[i];
+   fG.appendChild(o);
+ });
+ if(selected.giorno) fG.value=selected.giorno;
+ render();
+}
+
+const TIMES=[]; for(let h=0;h<24;h++){for(let m of[0,30]){let eh=h,em=m+30;if(em>=60){em=0;eh=(h+1)%24;}TIMES.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} - ${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}`);}}
+const fTime=document.getElementById('fTime'); TIMES.forEach(t=>{let o=document.createElement('option');o.value=t;o.textContent=t;fTime.appendChild(o);});
+selected={giorno:ROWS_KEYS[0],time:TIMES[0]};
+
+function inviaRichiesta(){
+ let all=document.getElementById('fAll').value.trim()||'WAR';
+ let gid=document.getElementById('fId').value.trim();
+ let name=document.getElementById('fName').value.trim();
+ let oro=document.getElementById('fOro').value.trim();
+ let giorno=document.getElementById('fGiorno').value;
+ let time=document.getElementById('fTime').value;
+ const t=L[curLang]||L.en;
+ if(!gid||!name||!oro){msg.textContent=t.fill;msg.style.color='#f87171';return;}
+ let exists=bookings.find(b=>b.giorno===giorno&&b.time===time&&b.status==='approved');
+ if(exists&&!isAdmin){msg.textContent=t.occupied;msg.style.color='#f87171';return;}
+ let id=Date.now().toString(36)+'_'+Math.random().toString(36).substr(2,5);
+ let status=isAdmin?'approved':'pending';
+ db.ref('regno1887_bookings/'+id).set({id,all,gid,name,oro,giorno,time,status,ts:Date.now()});
+ msg.textContent=isAdmin?`${t.approvedMsg}: ${giorno} ${time}`:t.sent;
+ msg.style.color=isAdmin?'#4ade80':'#facc15';
+}
+function approve(id){ db.ref('regno1887_bookings/'+id).update({status:'approved'}); }
+function reject(id){ if(confirm('Delete?')) db.ref('regno1887_bookings/'+id).remove(); }
+function deleteApproved(id){ if(!isAdmin) return; if(confirm('Delete?')) db.ref('regno1887_bookings/'+id).remove(); }
+function loginAdmin(){let p=prompt('Admin Password:'); if(p===ADMIN_PASSWORD){isAdmin=true;localStorage.setItem('isAdmin','1');updateAdminUI();} else if(p) alert('Wrong password');}
+function logoutAdmin(){isAdmin=false;localStorage.removeItem('isAdmin');updateAdminUI();}
+function updateAdminUI(){applyLang();document.getElementById('adminBtn').classList.toggle('hidden',isAdmin);document.getElementById('logoutBtn').classList.toggle('hidden',!isAdmin);document.getElementById('adminPanel').classList.toggle('hidden',!isAdmin);}
+function selectSlot(g,t){selected={giorno:g,time:t};document.getElementById('fGiorno').value=g;document.getElementById('fTime').value=t;document.getElementById('selInfo').classList.remove('hidden');const idx=ROWS_KEYS.indexOf(g);const label=(ROWS_LABELS[curLang]||ROWS_LABELS.en)[idx]||g;document.getElementById('selText').textContent=label+' '+t;render();}
+
+function render(){
+ const t=L[curLang]||L.en;
+ let head=document.getElementById('headRow');
+ head.innerHTML=`<th class="row-h p-3 text-left sticky left-0 top-0 z-30 bg-[#0b1117]">${t.dayPos}</th>`;
+ TIMES.forEach(ti=>{let th=document.createElement('th');th.className='cell-h';th.textContent=ti;head.appendChild(th);});
+ let tb=document.getElementById('tbody'); tb.innerHTML='';
+ ROWS_KEYS.forEach((key,i)=>{
+  let displayLabel=(ROWS_LABELS[curLang]||ROWS_LABELS.en)[i];
+  let tr=document.createElement('tr');
+  let html=`<td class="row-h sticky left-0 z-10 bg-[#0b1117]">${displayLabel}</td>`;
+  TIMES.forEach(ti=>{
+   let approved=bookings.find(x=>x.giorno===key&&x.time===ti&&x.status==='approved');
+   let pending=bookings.find(x=>x.giorno===key&&x.time===ti&&x.status==='pending');
+   let isSel=selected.giorno===key&&selected.time===ti;
+   if(approved){html+=`<td class="cell booked ${isSel?'selected':''}"><div class="font-bold text-[11px]">${approved.all}</div><div class="text-[11px] truncate">${approved.name}</div><div class="text-[9px]">💰 ${approved.oro}</div></td>`;}
+   else if(pending){html+=`<td class="cell ${isAdmin?'pending':''} ${isSel?'selected':''}"><div class="text-[10px] font-bold">${isAdmin?pending.name:'⏳ '+t.waiting}</div><div class="text-[7px]">${isAdmin?t.waiting:t.reserved}</div></td>`;}
+   else{html+=`<td class="cell ${isSel?'selected':''}" onclick="selectSlot('${key}','${ti}')"><div class="text-[16px] text-slate-600">+</div><div class="text-[7px] text-slate-500">${t.free}</div></td>`;}
+  });
+  tr.innerHTML=html; tb.appendChild(tr);
+ });
+ let pend=bookings.filter(b=>b.status==='pending').sort((a,b)=>b.ts-a.ts);
+ let appr=bookings.filter(b=>b.status==='approved').sort((a,b)=>b.ts-a.ts);
+ document.getElementById('pendingCount').textContent=pend.length;
+ document.getElementById('approvedCount').textContent=appr.length;
+ let pl=document.getElementById('pendingList'); pl.innerHTML=pend.length?'':'<div class="text-xs text-slate-500">None</div>';
+ pend.forEach(b=>{let d=document.createElement('div');d.className='p-3 rounded-xl bg-[#0b1117] border border-amber-500/30 text-xs';d.innerHTML=`<div class="font-bold">${b.giorno} ${b.time}</div><div>[${b.all}] ${b.name} ID:${b.gid} 💰 ${b.oro}</div><div class="flex gap-2 mt-2"><button onclick="approve('${b.id}')" class="px-3 py-1 rounded-full bg-green-600 text-white font-bold">✅</button><button onclick="reject('${b.id}')" class="px-3 py-1 rounded-full bg-red-600/30">❌</button></div>`;pl.appendChild(d);});
+ let al=document.getElementById('approvedList'); al.innerHTML=appr.length?'':'<div class="text-xs text-slate-500">None</div>';
+ appr.forEach(b=>{let d=document.createElement('div');d.className='p-2 rounded-xl bg-[#0b1117] border border-white/10 text-xs flex justify-between';d.innerHTML=`<span>${b.giorno} ${b.time} - ${b.name} (${b.oro})</span><button onclick="deleteApproved('${b.id}')" class="text-red-400">✕</button>`;al.appendChild(d);});
+}
+applyLang();
+updateAdminUI();
+</script>
+</body>
+</html>
