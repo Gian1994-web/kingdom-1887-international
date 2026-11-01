@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regno 1887 - Prenotazioni</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{background:#0b1117;color:#e2e8f0;font-family:sans-serif}
+.glass{background:#16202e;border:1px solid #ffffff12}
+.cell{min-width:95px;height:70px;border:1px solid rgba(255,255,255,.08);background:#101a27;cursor:pointer;text-align:center}
+.cell:hover{background:#1e2e44!important}
+.cell-h{min-width:95px;height:40px;border:1px solid rgba(255,255,255,.1);background:#0b1117;font-size:10px;color:#94a3b8;font-weight:700;text-align:center;position:sticky;top:0;z-index:5}
+.row-h{min-width:220px;background:#0b1117;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:700;padding:0 12px;position:sticky;left:0;z-index:10}
+.booked{background:linear-gradient(135deg,#4f46e5,#7c3aed)!important;color:white}
+.selected{outline:3px solid #facc15;outline-offset:-3px;background:#facc15!important;color:black!important}
+</style>
+</head>
+<body>
+<header class="p-4 border-b border-white/10 flex justify-between items-center max-w-[1700px] mx-auto sticky top-0 bg-[#0b1117] z-30">
+<div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">👑</div><div><div class="font-bold">[WAR] Regno: 1887 - Prenotazioni</div><div class="text-xs text-slate-400">Clicca uno slot → inserisci dati → Prenota</div></div></div>
+<button onclick="if(confirm('Cancellare tutto?')){localStorage.clear();location.reload()}" class="text-xs px-3 py-1.5 rounded-full border border-white/10">Reset</button>
+</header>
+
+<div class="max-w-[1700px] mx-auto p-4 grid xl:grid-cols-[360px_1fr] gap-6">
+<!-- FORM -->
+<div class="glass rounded-[20px] p-5 h-fit xl:sticky top-[80px] z-20">
+<h2 class="font-bold uppercase text-sm tracking-widest">Prenota un Appuntamento</h2>
+<div id="selInfo" class="mt-3 p-3 rounded-xl bg-amber-400 text-black text-xs font-bold hidden">Selezionato: <span id="selText"></span></div>
+
+<div class="mt-4 space-y-3">
+<div><label class="text-[10px] uppercase text-slate-400">Etichetta dell'Alleanza</label><input id="fAll" value="WAR" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] uppercase text-slate-400">ID Profilo</label><input id="fId" placeholder="123456" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div><div><label class="text-[10px] uppercase text-slate-400">Nome Profilo</label><input id="fName" placeholder="Voldemort" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div></div>
+
+<!-- ORO VERO - CAMPO VUOTO -->
+<div><label class="text-[10px] uppercase font-bold text-amber-300">Oro Vero Posseduto (inserisci valore)</label><input id="fOro" type="text" placeholder="Es: 1.5M, 300k, 2500000..." class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-amber-400/30 text-sm focus:border-amber-400 focus:outline-none"></div>
+
+<div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] uppercase text-slate-400">Giorno</label><select id="fGiorno" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></select></div><div><label class="text-[10px] uppercase text-slate-400">Orario UTC</label><select id="fTime" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></select></div></div>
+<div><label class="text-[10px] uppercase text-slate-400">Screenshot Velocità (opzionale)</label><input id="fFile" type="file" accept="image/*" class="w-full mt-1 text-xs"><div id="prev" class="hidden mt-2"><img id="prevImg" class="w-full rounded-xl border border-white/10"></div></div>
+<button onclick="prenotaOra()" class="w-full mt-2 bg-gradient-to-r from-indigo-600 to-violet-600 py-3.5 rounded-xl font-bold text-sm">✅ PRENOTA ORA</button>
+<p id="msg" class="text-xs text-center mt-2 font-bold"></p>
+</div>
+</div>
+
+<!-- TABELLA -->
+<div class="overflow-hidden">
+<h2 class="font-bold mb-2">🕐 Tabella 24h UTC (00:00 - 23:30 ogni 30min) → Scorri a destra</h2>
+<div class="glass rounded-[16px] overflow-auto max-h-[85vh]">
+<table class="border-collapse"><thead><tr id="headRow"><th class="row-h p-3 text-left sticky left-0 top-0 z-30 bg-[#0b1117]">Giorno UTC / Posizione</th></tr></thead><tbody id="tbody"></tbody></table>
+</div>
+</div>
+</div>
+
+<script>
+const TIMES=[]; for(let h=0;h<24;h++){for(let m of[0,30]){let eh=h,em=m+30;if(em>=60){em=0;eh=(h+1)%24;}TIMES.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} - ${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}`);}}
+// ORDINE CORRETTO COME CHIESTO
+const ROWS=[
+"Giorno 1 (Costruzione)",
+"Giorno 2 (Ricerca)",
+"Giorno 4 (Consigliere Nobile)",
+"Giorno 4 (Primo Ministro)",
+"Giorno 5 (Consigliere Nobile)",
+"Giorno 5 (Primo Ministro)"
+];
+let bookings=JSON.parse(localStorage.getItem('regno1887_final2')||'[]');
+let selected={giorno:null,time:null};
+const fGiorno=document.getElementById('fGiorno'); ROWS.forEach(r=>{let o=document.createElement('option');o.value=r;o.textContent=r;fGiorno.appendChild(o);});
+const fTime=document.getElementById('fTime'); TIMES.forEach(t=>{let o=document.createElement('option');o.value=t;o.textContent=t;fTime.appendChild(o);});
+fGiorno.addEventListener('change',()=>{selected.giorno=fGiorno.value;selected.time=fTime.value;showSel()});
+fTime.addEventListener('change',()=>{selected.giorno=fGiorno.value;selected.time=fTime.value;showSel()});
+function showSel(){document.getElementById('selInfo').classList.remove('hidden');document.getElementById('selText').textContent=selected.giorno+' '+selected.time;render();}
+function selectSlot(giorno,time){selected={giorno,time};fGiorno.value=giorno;fTime.value=time;document.getElementById('selInfo').classList.remove('hidden');document.getElementById('selText').textContent=giorno+' '+time;window.scrollTo({top:0,behavior:'smooth'});render();}
+function prenotaOra(){
+ let all=document.getElementById('fAll').value.trim()||'WAR';
+ let gid=document.getElementById('fId').value.trim();
+ let name=document.getElementById('fName').value.trim();
+ let oro=document.getElementById('fOro').value.trim();
+ let giorno=fGiorno.value; let time=fTime.value;
+ if(!gid||!name){msg.textContent='❌ Inserisci ID e Nome';msg.style.color='#f87171';return;}
+ if(!oro){msg.textContent='❌ Inserisci quanto Oro Vero possiedi';msg.style.color='#f87171';document.getElementById('fOro').focus();return;}
+ let exists=bookings.find(b=>b.giorno===giorno&&b.time===time);
+ if(exists){if(!confirm(`Slot ${giorno} ${time} occupato da ${exists.name}. Sovrascrivere?`))return; bookings=bookings.filter(b=>!(b.giorno===giorno&&b.time===time));}
+ bookings.push({all,gid,name,oro,giorno,time,ts:Date.now()});
+ localStorage.setItem('regno1887_final2',JSON.stringify(bookings));
+ msg.textContent=`✅ Prenotato ${giorno} ${time} - Oro: ${oro}`;msg.style.color='#4ade80';render();
+}
+function render(){
+ let head=document.getElementById('headRow'); head.innerHTML='<th class="row-h p-3 text-left sticky left-0 top-0 z-30 bg-[#0b1117]">Giorno UTC / Posizione</th>';
+ TIMES.forEach(t=>{let th=document.createElement('th');th.className='cell-h';th.textContent=t;head.appendChild(th);});
+ let tb=document.getElementById('tbody'); tb.innerHTML='';
+ ROWS.forEach(row=>{
+  let tr=document.createElement('tr');
+  let html=`<td class="row-h sticky left-0 z-10 bg-[#0b1117]">${row}</td>`;
+  TIMES.forEach(t=>{
+   let b=bookings.find(x=>x.giorno===row&&x.time===t);
+   let isSel=selected.giorno===row&&selected.time===t;
+   if(b){html+=`<td class="cell booked ${isSel?'selected':''}" onclick="if(confirm('Slot di ${b.name} Oro: ${b.oro} - Liberare?')){bookings=bookings.filter(x=>!(x.giorno==='${row}'&&x.time==='${t}'));localStorage.setItem('regno1887_final2',JSON.stringify(bookings));render();}"><div class="font-bold text-[11px]">${b.all}</div><div class="text-[11px] truncate px-1">${b.name}</div><div class="text-[9px] text-amber-200">💰 ${b.oro}</div></td>`;}
+   else{html+=`<td class="cell ${isSel?'selected':''}" onclick="selectSlot('${row}','${t}')"><div class="text-[16px] text-slate-600">+</div><div class="text-[8px] text-slate-500">Prenota</div></td>`;}
+  });
+  tr.innerHTML=html; tb.appendChild(tr);
+ });
+}
+render();
+</script>
+</body>
+</html>
