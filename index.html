@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regno 1887 - Prenota Appuntamenti</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Inter,sans-serif;background:#0b1117;color:#e2e8f0}
+.title{font-family:Space Grotesk,sans-serif}
+.glass{background:#16202e;border:1px solid rgba(255,255,255,.07)}
+.th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;font-weight:600}
+.cell{height:72px;border:1px solid rgba(255,255,255,.06);background:#101a27}
+.cell:hover{background:#1a2738}
+.booked{background:linear-gradient(135deg,#4f46e5,#7c3aed)!important;color:white}
+</style>
+</head>
+<body class="min-h-screen">
+<header class="sticky top-0 z-30 bg-[#0b1117]/90 backdrop-blur border-b border-white/5">
+<div class="max-w-[1400px] mx-auto px-4 h-[64px] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-xl">👑</div>
+<div><div class="title font-bold text-[16px] leading-none">[WAR] Regno: 1887 Appuntamenti</div><div class="text-[11px] text-slate-400">VOLDEMORS - International Server</div></div>
+</div>
+<div class="flex items-center gap-2">
+<select class="bg-[#16202e] border border-white/10 rounded-full px-4 py-2 text-xs"><option>🇮🇹 Italiano</option><option>🇬🇧 English</option></select>
+</div>
+</div>
+</header>
+
+<div class="max-w-[1400px] mx-auto px-4 py-6 grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-6">
+<div class="glass rounded-[20px] p-5 h-fit sticky top-[80px]">
+<h2 class="title font-bold text-[14px] uppercase tracking-widest">Prenota un Appuntamento</h2>
+<div class="mt-5 space-y-3">
+<div><label class="th">Etichetta dell'Alleanza</label><input id="fAll" value="WAR" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div><label class="th">ID del Profilo di Gioco</label><input id="fId" placeholder="Es: 123456" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div><label class="th">Nome del Profilo di Gioco</label><input id="fName" placeholder="Es
