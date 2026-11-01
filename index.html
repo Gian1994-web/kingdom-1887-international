@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[WAR] Regno 1887 - LIVE Mondiale</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+body{background:#0b1117;color:#e2e8f0;font-family:sans-serif}
+.glass{background:#16202e;border:1px solid #ffffff12}
+.cell{min-width:95px;height:72px;border:1px solid rgba(255,255,255,.08);background:#101a27;text-align:center;cursor:pointer}
+.cell-h{min-width:95px;height:40px;border:1px solid rgba(255,255,255,.1);background:#0b1117;font-size:10px;color:#94a3b8;font-weight:700;text-align:center;position:sticky;top:0;z-index:5}
+.row-h{min-width:220px;background:#0b1117;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:700;padding:0 12px;position:sticky;left:0;z-index:10}
+.booked{background:linear-gradient(135deg,#16a34a,#15803d)!important;color:white}
+.pending{background:linear-gradient(135deg,#f59e0b,#d97706)!important;color:white}
+.selected{outline:3px solid #facc15;outline-offset:-3px;background:#facc15!important;color:black!important}
+</style>
+</head>
+<body>
+<header class="p-4 border-b border-white/10 flex justify-between items-center max-w-[1700px] mx-auto sticky top-0 bg-[#0b1117] z-30">
+<div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">👑</div><div><div class="font-bold">[WAR] Regno: 1887 - LIVE Mondiale</div><div id="roleInfo" class="text-xs flex items-center gap-2"><span id="connDot" class="w-2 h-2 rounded-full bg-amber-500"></span><span id="connText">Connessione...</span> | <span id="roleText">Giocatore</span></div></div></div>
+<div class="flex gap-2"><button id="adminBtn" onclick="loginAdmin()" class="text-xs px-4 py-2 rounded-full bg-white text-black font-bold">🔐 Admin</button><button id="logoutBtn" onclick="logoutAdmin()" class="hidden text-xs px-3 py-1.5 rounded-full border border-white/10">Esci</button></div>
+</header>
+<div class="max-w-[1700px] mx-auto p-4 grid xl:grid-cols-[380px_1fr] gap-6">
+<div class="glass rounded-[20px] p-5 h-fit xl:sticky top-[80px] z-20">
+<h2 class="font-bold uppercase text-sm">Richiedi Appuntamento</h2>
+<div id="selInfo" class="mt-3 p-3 rounded-xl bg-amber-400 text-black text-xs font-bold hidden">Slot: <span id="selText"></span></div>
+<div class="mt-4 space-y-3">
+<div><label class="text-[10px] uppercase text-slate-400">Alleanza</label><input id="fAll" value="WAR" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] uppercase text-slate-400">ID Gioco</label><input id="fId" placeholder="123456" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div><div><label class="text-[10px] uppercase text-slate-400">Nome in gioco</label><input id="fName" placeholder="Voldemort" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div></div>
+<div><label class="text-[10px] uppercase font-bold text-amber-300">Oro Vero Posseduto</label><input id="fOro" type="text" placeholder="Es: 1.5M, 300k" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-amber-400/40 text-sm"></div>
+<div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] uppercase text-slate-400">Giorno</label><select id="fGiorno" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></select></div><div><label class="text-[10px] uppercase text-slate-400">Orario UTC</label><select id="fTime" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></select></div></div>
+<button onclick="inviaRichiesta()" class="w-full mt-2 bg-gradient-to-r from-indigo-600 to-violet-600 py-3.5 rounded-xl font-bold text-sm">📨 INVIA RICHIESTA</button>
+<p id="msg" class="text-xs text-center mt-2 font-bold"></p>
+<p class="text-[10px] text-slate-400 text-center mt-3">ℹ️ La richiesta verrà inviata a Voldemort. Vedrai il tuo nome in tabella solo dopo l'approvazione.</p>
+</div>
+<div id="adminPanel" class="hidden mt-6 border-t border-white/10 pt-4">
+<h3 class="font-bold text-sm">🔥 Richieste in Attesa (<span id="pendingCount">0</span>)</h3>
+<div id="pendingList" class="mt-3 space-y-2 max-h-[400px] overflow-auto"></div>
+<h3 class="font-bold text-sm mt-4">✅ Approvate (<span id="approvedCount">0</span>)</h3>
+<div id="approvedList" class="mt-2 space-y-1 max-h-[200px] overflow-auto"></div>
+</div>
+</div>
+<div class="overflow-hidden">
+<h2 class="font-bold mb-2 flex gap-2 items-center">🕐 Tabella Ufficiale LIVE <span class="text-[10px] px-2 py-1 rounded bg-green-500/20 text-green-400">Solo approvate visibili a tutti</span></h2>
+<div class="glass rounded-[16px] overflow-auto max-h-[85vh]">
+<table class="border-collapse"><thead><tr id="headRow"><th class="row-h p-3 text-left sticky left-0 top-0 z-30 bg-[#0b1117]">Giorno / Posizione</th></tr></thead><tbody id="tbody"></tbody></table>
+</div>
+</div>
+</div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCSknMrcfKPLHxS8e5VRpd9J0YkAKed1jg",
+  authDomain: "regno-1887.firebaseapp.com",
+  databaseURL: "https://regno-1887-default-rtdb.firebaseio.com",
+  projectId: "regno-1887",
+  storageBucket: "regno-1887.firebasestorage.app",
+  messagingSenderId: "208678152589",
+  appId: "1:208678152589:web:4979f2d05333c147b7f5c4",
+  measurementId: "G-JPCSBT3BR3"
+};
+const ADMIN_PASSWORD="WAR1887";
+let isAdmin=localStorage.getItem('isAdmin')==='1';
+let bookings=[];
+let selected={giorno:null,time:null};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const ref=db.ref('regno1887_bookings');
+ref.on('value', snap=>{
+  const val=snap.val();
+  bookings=val?Object.values(val):[];
+  document.getElementById('connDot').className='w-2 h-2 rounded-full bg-green-500 animate-pulse';
+  document.getElementById('connText').textContent='Connesso - LIVE Mondiale';
+  render();
+});
+function inviaRichiesta(){
+ let all=document.getElementById('fAll').value.trim()||'WAR';
+ let gid=document.getElementById('fId').value.trim();
+ let name=document.getElementById('fName').value.trim();
+ let oro=document.getElementById('fOro').value.trim();
+ let giorno=document.getElementById('fGiorno').value;
+ let time=document.getElementById('fTime').value;
+ if(!gid||!name||!oro){msg.textContent='❌ Compila ID, Nome e Oro';msg.style.color='#f87171';return;}
+ let exists=bookings.find(b=>b.giorno===giorno&&b.time===time&&b.status==='approved');
+ if(exists&&!isAdmin){msg.textContent=`❌ Slot già occupato`;msg.style.color='#f87171';return;}
+ let id=Date.now().toString(36)+'_'+Math.random().toString(36).substr(2,5);
+ let status=isAdmin?'approved':'pending';
+ db.ref('regno1887_bookings/'+id).set({id,all,gid,name,oro,giorno,time,status,ts:Date.now()});
+ msg.textContent=isAdmin?`✅ Approvato LIVE: ${giorno} ${time}`:`📨 Richiesta inviata! In attesa di approvazione`;
+ msg.style.color=isAdmin?'#4ade80':'#facc15';
+}
+function approve(id){ db.ref('regno1887_bookings/'+id).update({status:'approved'}); }
+function reject(id){ if(confirm('Rifiutare?')) db.ref('regno1887_bookings/'+id).remove(); }
+function deleteApproved(id){ if(!isAdmin) return; if(confirm('Cancellare?')) db.ref('regno1887_bookings/'+id).remove(); }
+const TIMES=[]; for(let h=0;h<24;h++){for(let m of[0,30]){let eh=h,em=m+30;if(em>=60){em=0;eh=(h+1)%24;}TIMES.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} - ${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}`);}}
+const ROWS=["Giorno 1 (Costruzione)","Giorno 2 (Ricerca)","Giorno 4 (Consigliere Nobile)","Giorno 4 (Primo Ministro)","Giorno
