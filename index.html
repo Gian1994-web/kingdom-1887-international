@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regno 1887 - Prenota Appuntamenti</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Inter,sans-serif;background:#0b1117;color:#e2e8f0}
+.title{font-family:Space Grotesk,sans-serif}
+.glass{background:#16202e;border:1px solid rgba(255,255,255,.07)}
+.th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;font-weight:600}
+.cell{height:72px;border:1px solid rgba(255,255,255,.06);background:#101a27}
+.cell:hover{background:#1a2738}
+.booked{background:linear-gradient(135deg,#4f46e5,#7c3aed)!important;color:white}
+</style>
+</head>
+<body class="min-h-screen">
+<header class="sticky top-0 z-30 bg-[#0b1117]/90 backdrop-blur border-b border-white/5">
+<div class="max-w-[1400px] mx-auto px-4 h-[64px] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-xl">👑</div>
+<div><div class="title font-bold text-[16px] leading-none">[WAR] Regno: 1887 Appuntamenti</div><div class="text-[11px] text-slate-400">VOLDEMORS - International</div></div>
+</div>
+<div class="flex items-center gap-2">
+<select class="bg-[#16202e] border border-white/10 rounded-full px-4 py-2 text-xs"><option>🇮🇹 Italiano</option><option>🇬🇧 English</option><option>🇫🇷 Français</option></select>
+</div>
+</div>
+</header>
+
+<div class="max-w-[1400px] mx-auto px-4 py-6 grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-6">
+<div class="glass rounded-[20px] p-5 h-fit sticky top-[80px]">
+<h2 class="title font-bold text-[14px] uppercase tracking-widest">Pianta un Appuntamento</h2>
+<div class="mt-5 space-y-3">
+<div><label class="th">Etichetta dell'Alleanza</label><input id="fAll" placeholder="Es: WAR" value="WAR" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div><label class="th">ID del Profilo di Gioco</label><input id="fId" placeholder="Es: 123456" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div><label class="th">Nome del Profilo di Gioco</label><input id="fName" placeholder="Es: Voldemort" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"></div>
+<div><label class="th">Oco Veloce - Oco Vero</label><select id="fOco" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><option>Oco Veloce</option><option>Oco Vero</option></select></div>
+<div class="pt-2 border-t border-white/5">
+<label class="th">Apri / Una Fascia Oraria</label>
+<select id="fSlotTime" class="mt-1 w-full px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10 text-sm">
+<option>00:00 - 00:30</option><option>00:30 - 01:00</option><option>01:00 - 01:30</option><option>20:00 - 20:30</option><option>21:00 - 21:30</option><option>21:30 - 22:00</option>
+</select>
+</div>
+<div>
+<label class="th">Giorno / Posizione</label>
+<div class="mt-2 space-y-1.5">
+<label class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="giorno" value="Giorno 1 (Costruzione)" checked> Giorno 1 (Costruzione)</label>
+<label class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="giorno" value="Giorno 2 (Ricerca)"> Giorno 2 (Ricerca)</label>
+<label class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="giorno" value="Giorno 4 (Consigliere Nobile)"> Giorno 4 (Consigliere Nobile)</label>
+<label class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="giorno" value="Giorno 5 (Consigliere Nobile)"> Giorno 5 (Consigliere Nobile)</label>
+<label class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="giorno" value="Giorno 5 (Primo Ministro)"> Giorno 5 (Primo Ministro)</label>
+<label class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="giorno" value="Giorno 2 (Regia)"> Giorno 2 (Regia)</label>
+</div>
+</div>
+<div>
+<label class="th">Carica File - Screenshot Velocità</label>
+<p class="text-[11px] text-slate-400 mt-1">Fai uno screenshot dei tuoi miglioramenti di velocità nella borsa e caricalo qui.</p>
+<input id="fFile" type="file" accept="image/*" class="mt-2 w-full text-xs file:mr-2 file:px-3 file:py-2 file:rounded-full file:border-0 file:bg-white file:text-black">
+<div id="preview" class="mt-2 hidden"><img id="prevImg" class="w-full rounded-xl border border-white/10"></div>
+</div>
+<button onclick="bookSlot()" class="w-full mt-4 bg-gradient-to-r from-indigo-600 to-violet-600 py-3 rounded-xl font-bold text-sm">PRENOTA UNO SLOT</button>
+<p id="msg" class="text-xs text-center mt-2"></p>
+</div>
+</div>
+
+<div class="overflow-auto">
+<div class="flex justify-between items-center mb-3">
+<h2 class="title font-bold">Tabella Prenotazioni - Giorno UTC</h2>
+<button onclick="clearAll()" class="text-xs text-slate-400">Reset</button>
+</div>
+<div class="glass rounded-[16px] overflow-hidden">
+<table class="w-full border-collapse">
+<thead><tr class="bg-[#0b1117]"><th class="th p-3 text-left border border-white/5">Giorno UTC / Posizione</th><th class="th p-3 border border-white/5">00:00-00:30</th><th class="th p-3 border border-white/5">00:30-01:00</th><th class="th p-3 border border-white/5">01:00-01:30</th><th class="th p-3 border border-white/5">20:00-21:00</th><th class="th p-3 border border-white/5">21:00-22:00</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+const TIMES=["00:00 - 00:30","00:30 - 01:00","01:00 - 01:30","01:30 - 02:00","20:00 - 20:30","21:00 - 21:30"];
+const ROWS=["Giorno UTC","Giorno 1 (Costruzione)","Giorno 2 (Ricerca)","Giorno 4 (Consigliere Nobile)","Giorno 5 (Consigliere Nobile)","Giorno 5 (Primo Ministro)","Giorno 2 (Regia)"];
+let bookings=JSON.parse(localStorage.getItem('regno1887_book')||'[]');
+let fileData=null;
+document.getElementById('fFile').addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return; const r=new FileReader(); r.onload=ev=>{fileData=ev.target.result; document.getElementById('prevImg').src=fileData; document.getElementById('preview').classList.remove('hidden');}; r.readAsDataURL(file);});
+function bookSlot(){const alliance=document.getElementById('fAll').value.trim()||'WAR';const gid=document.getElementById('fId').value.trim();const name=document.getElementById('fName').value.trim();const oco=document.getElementById('fOco').value;const time=document.getElementById('fSlotTime').value;const giorno=document.querySelector('input[name="giorno"]:checked').value;if(!gid||!name){document.getElementById('msg').textContent='Inserisci ID e Nome!';return;}const exists=bookings.find(b=>b.giorno===giorno && b.time===time);if(exists){if(!confirm('Slot già prenotato da '+exists.name+'. Sovrascrivere?'))return; bookings=bookings.filter(b=>!(b.giorno===giorno && b.time===time));}bookings.push({alliance,gid,name,oco,time,giorno,file:fileData,ts:Date.now()});localStorage.setItem('regno1887_book',JSON.stringify(bookings));document.getElementById('msg').textContent='Prenotato! '+giorno+' '+time;renderTable();}
+function renderTable(){const tbody=document.getElementById('tbody');tbody.innerHTML='';ROWS.forEach(row=>{const tr=document.createElement('tr');let html=`<td class="p-3 th border border-white/5 bg-[#0b1117]">${row}</td>`;TIMES.forEach(t=>{const b=bookings.find(x=> x.giorno===row && (x.time===t || t.includes(x.time.split(' - ')[0])));if(b){html+=`<td class="cell booked p-2 text-[11px]"><div class="font-bold">${b.alliance}</div><div>${b.name}</div><div class="opacity-80 text-[10px]">${b.gid}</div><button onclick="viewBooking('${b.ts}')" class="mt-1 text-[9px] underline">Screenshot</button></td>`;}else{html+=`<td class="cell p-2 text-center text-slate-500 text-[11px]">+<br><span class="text-[9px]">Libero</span></td>`;}});tr.innerHTML=html;tbody.appendChild(tr);});}
+function viewBooking(ts){const b=bookings.find(x=>x.ts==ts);if(!b)return;let w=window.open('','_blank');w.document.write(`<body style="background:#0b1117;color:white;font-family:sans-serif;padding:20px"><h3>${b.giorno} - ${b.time}</h3><p>${b.alliance} - ${b.name} (ID:${b.gid}) - ${b.oco}</p>${b.file?`<img src="${b.file}" style="max-width:100%;margin-top:15px;border-radius:12px">`:'<p>Nessuno screenshot</p>'}<br><button onclick="window.close()" style="margin-top:15px;padding:10px 20px;border-radius:999px;border:none;background:white;color:black">Chiudi</button></body>`);}
+function clearAll(){if(confirm('Cancellare tutto?')){bookings=[];localStorage.removeItem('regno1887_book');renderTable();}}
+renderTable();
+</script>
+</body>
+</html>
