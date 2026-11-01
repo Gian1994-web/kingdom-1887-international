@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regno 1887</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{background:#0b1117;color:#e2e8f0;font-family:sans-serif}
+.glass{background:#16202e;border:1px solid #ffffff12}
+</style>
+</head>
+<body>
+<header class="p-4 border-b border-white/5 flex justify-between items-center max-w-[1400px] mx-auto">
+<div class="flex gap-3 items-center"><div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center">👑</div><div><div class="font-bold">[WAR] Regno: 1887 Appuntamenti</div><div class="text-xs text-slate-400">VOLDEMORS</div></div></div>
+</header>
+
+<div class="max-w-[1400px] mx-auto p-4 grid xl:grid-cols-[340px_1fr] gap-6">
+
+<!-- SINISTRA -->
+<div class="glass rounded-[20px] p-5 h-fit">
+<h2 class="font-bold uppercase text-sm tracking-widest">Prenota un Appuntamento</h2>
+
+<div class="mt-5 space-y-3">
+<div><label class="text-[10px] uppercase text-slate-400">Etichetta dell'Alleanza</label><input id="fAll" value="WAR" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10"></div>
+<div><label class="text-[10px] uppercase text-slate-400">ID del Profilo di Gioco</label><input id="fId" placeholder="123456" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10"></div>
+<div><label class="text-[10px] uppercase text-slate-400">Nome del Profilo di Gioco</label><input id="fName" placeholder="Voldemort" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10"></div>
+
+<div><label class="text-[10px] uppercase text-slate-400">Oro Vero</label><select id="fOco" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10"><option>Oro Vero</option><option>Oro Veloce</option></select></div>
+
+<div><label class="text-[10px] uppercase text-slate-400">Fascia Oraria</label><select id="fTime" class="w-full mt-1 px-3 py-2.5 rounded-xl bg-[#0b1117] border border-white/10"><option>00:00 - 00:30</option><option>00:30 - 01:00</option><option>01:00 - 01:30</option><option>20:00 - 20:30</option><option>21:00 - 21:30</option></select></div>
+
+<div><label class="text-[10px] uppercase text-slate-400">Giorno / Posizione</label>
+<div class="mt-2 space-y-1">
+<label class="flex gap-2 p-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="g" value="Giorno 1 (Costruzione)" checked> Giorno 1 (Costruzione)</label>
+<label class="flex gap-2 p-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="g" value="Giorno 2 (Ricerca)"> Giorno 2 (Ricerca)</label>
+<label class="flex gap-2 p-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="g" value="Giorno 4 (Consigliere Nobile)"> Giorno 4 (Consigliere Nobile)</label>
+<label class="flex gap-2 p-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="g" value="Giorno 5 (Consigliere Nobile)"> Giorno 5 (Consigliere Nobile)</label>
+<label class="flex gap-2 p-2 rounded-xl bg-[#0b1117] border border-white/10 text-sm"><input type="radio" name="g" value="Giorno 5 (Primo Ministro)"> Giorno 5 (Primo Ministro)</label>
+</div>
+</div>
+
+<div><label class="text-[10px] uppercase text-slate-400">Screenshot Velocità</label><input id="fFile" type="file" accept="image/*" class="w-full mt-1 text-xs"><div id="prev" class="hidden mt-2"><img id="prevImg" class="w-full rounded-xl"></div></div>
+
+<button onclick="book()" class="w-full mt-3 bg-indigo-600 py-3 rounded-xl font-bold">PRENOTA UNO SLOT</button>
+<p id="msg" class="text-xs text-center mt-2"></p>
+</div>
+</div>
+
+<!-- DESTRA -->
+<div>
+<h2 class="font-bold mb-3">Tabella Prenotazioni - Giorno UTC</h2>
+<div class="glass rounded-xl overflow-auto">
+<table class="w-full border-collapse text-sm">
+<thead><tr class="bg-[#0b1117] text-[10px] uppercase text-slate-400"><th class="p-3 border border-white/5 text-left">Giorno / Posizione</th><th class="p-3 border border-white/5">00:00-00:30</th><th class="p-3 border border-white/5">00:30-01:00</th><th class="p-3 border border-white/5">20:00-21:00</th><th class="p-3 border border-white/5">21:00-22:00</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<script>
+const TIMES=["00:00 - 00:30","00:30 - 01:00","01:00 - 01:30","20:00 - 20:30","21:00 - 21:30"];
+const ROWS=["Giorno 1 (Costruzione)","Giorno 2 (Ricerca)","Giorno 4 (Consigliere Nobile)","Giorno 5 (Consigliere Nobile)","Giorno 5 (Primo Ministro)","Giorno 2 (Regia)"];
+let bookings=JSON.parse(localStorage.getItem('regno1887_final')||'[]');
+let fileData=null;
+fFile.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{fileData=ev.target.result;prevImg.src=fileData;prev.classList.remove('hidden')};r.readAsDataURL(f)});
+function book(){const all=fAll.value||'WAR';const gid=fId.value.trim();const name=fName.value.trim();const oro=fOco.value;const time=fTime.value;const giorno=document.querySelector('input[name="g"]:checked').value;if(!gid||!name){msg.textContent='Inserisci ID e Nome';return;}let exists=bookings.find(b=>b.giorno===giorno&&b.time===time);if(exists){if(!confirm('Già prenotato da '+exists.name+'. Sovrascrivere?'))return;bookings=bookings.filter(b=>!(b.giorno===giorno&&b.time===time))}bookings.push({all,gid,name,oro,time,giorno,file:fileData,ts:Date.now()});localStorage.setItem('regno1887_final',JSON.stringify(bookings));msg.textContent='Prenotato! '+giorno;render();}
+function render(){const tb=document.getElementById('tbody');tb.innerHTML='';ROWS.forEach(row=>{const tr=document.createElement('tr');let h=`<td class="p-3 border border-white/5 bg-[#0b1117] text-xs font-bold">${row}</td>`;TIMES.forEach(t=>{const b=bookings.find(x=>x.giorno===row&&x.time===t);if(b){h+=`<td class="p-2 border border-white/5 bg-indigo-600 text-white text-[11px]"><b>${b.all}</b><br>${b.name}<br><span class="text-[10px] opacity-70">${b.gid}</span></td>`}else{h+=`<td class="p-2 border border-white/5 text-center text-slate-500 text-[11px]">Libero</td>`}});tr.innerHTML=h;tb.appendChild(tr);});}
+render();
+</script>
+</body>
+</html>
