@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regno 1887 Appointments</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Inter',sans-serif;background:#0f1419;color:#e2e8f0;margin:0}
+.title{font-family:'Space Grotesk',sans-serif}
+.glass{background:rgba(24,33,45,0.9);border:1px solid rgba(255,255,255,0.06)}
+</style>
+</head>
+<body class="min-h-screen">
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-[#0f1419]/90 border-b border-white/5">
+<div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center font-bold">R</div>
+<div><h1 class="title font-bold text-[16px]">Regno 1887</h1><p class="text-[11px] text-slate-400 uppercase tracking-widest">Appointments</p></div>
+</div>
+<select class="bg-[#1a2330] border border-white/10 rounded-full px-3 py-1.5 text-xs">
+<option>English</option><option>Italiano</option><option>Francais</option>
+</select>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-4 py-6">
+<div class="flex flex-col lg:flex-row gap-6">
+<div class="lg:w-[360px]">
+<div class="glass rounded-[20px] p-5">
+<h2 class="title font-bold text-[15px] mb-4">Create Appointment</h2>
+<form id="form" class="space-y-3">
+<input id="titolo" required placeholder="Ex: KvK Rally Capital 21:00" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0f1419] border border-white/10 text-sm">
+<div class="grid grid-cols-2 gap-2">
+<input id="data" type="date" required class="w-full px-3 py-2.5 rounded-xl bg-[#0f1419] border border-white/10 text-sm">
+<input id="ora" type="time" required class="w-full px-3 py-2.5 rounded-xl bg-[#0f1419] border border-white/10 text-sm">
+</div>
+<select id="tipo" class="w-full px-3 py-2.5 rounded-xl bg-[#0f1419] border border-white/10 text-sm">
+<option>Rally</option><option>Defense</option><option>Meeting</option><option>Guard Shift</option><option>Scout</option><option>Other</option>
+</select>
+<input id="target" placeholder="Ex: Throne, Fort, Server #1895" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0f1419] border border-white/10 text-sm">
+<input id="capo" placeholder="Ex: Your in-game name" class="w-full px-3.5 py-2.5 rounded-xl bg-[#0f1419] border border-white/10 text-sm">
+<textarea id="note" rows="3" placeholder="Troops, power requirement..." class="w-full px-3.5 py-2.5 rounded-xl bg-[#0f1419] border border-white/10 text-sm"></textarea>
+<button type="submit" class="w-full bg-white text-black py-3 rounded-xl font-semibold text-sm">+ Create Appointment</button>
+</form>
+</div>
+</div>
+<div class="flex-1">
+<h2 class="title font-bold text-[18px] mb-4">Appointments</h2>
+<div id="list" class="space-y-3"></div>
+<div id="empty" class="glass rounded-[20px] p-12 text-center">
+<div class="w-12 h-12 rounded-full bg-[#1a2330] mx-auto flex items-center justify-center mb-3">+</div>
+<h3 class="font-semibold text-sm">No appointments yet</h3>
+<p class="text-xs text-slate-400 mt-1">Create your first appointment. Empty, no alliances.</p>
+</div>
+</div>
+</div>
+</main>
+<script>
+let dataList=JSON.parse(localStorage.getItem('r1887_appt')||'[]');
+document.getElementById('data').valueAsDate=new Date();
+document.getElementById('form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const id=Math.random().toString(36).slice(2)+Date.now().toString(36);
+  const item={id:id,titolo:document.getElementById('titolo').value,data:document.getElementById('data').value,ora:document.getElementById('ora').value,tipo:document.getElementById('tipo').value,target:document.getElementById('target').value,capo:document.getElementById('capo').value,note:document.getElementById('note').value};
+  dataList.push(item);localStorage.setItem('r1887_appt',JSON.stringify(dataList));render();
+  alert('Created! Link: '+location.origin+location.pathname.replace('index.html','')+'appointments/'+id);
+  e.target.reset();document.getElementById('data').valueAsDate=new Date();
+});
+function render(){
+  const list=document.getElementById('list');list.innerHTML='';
+  document.getElementById('empty').style.display=dataList.length?'none':'block';
+  dataList.slice().reverse().forEach(a=>{
+    const div=document.createElement('div');div.className='glass rounded-[20px] p-4';
+    div.innerHTML='<div class="flex justify-between"><div class="flex gap-3"><div class="w-11 h-11 rounded-xl bg-[#1a2330] border border-white/10 flex flex-col items-center justify-center"><span class="text-[9px] text-slate-400">'+a.data.slice(5)+'</span><span class="font-bold text-sm">'+a.ora+'</span></div><div><h3 class="font-semibold text-[14px]">'+a.titolo+'</h3><p class="text-xs text-slate-400">'+a.tipo+' • '+(a.target||'No target')+'</p></div></div><button onclick="if(confirm(\'Delete?\')){dataList=dataList.filter(d=>d.id!==\''+a.id+'\');localStorage.setItem(\'r1887_appt\',JSON.stringify(dataList));render();}" class="w-7 h-7 rounded-full bg-[#1a2330] text-xs">X</button></div>';
+    list.appendChild(div);
+  });
+}
+render();
+</script>
+</body>
+</html>
